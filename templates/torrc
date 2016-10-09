@@ -1,4 +1,4 @@
-# ansible generated torrc
+{{ ansible_managed }}
 RunAsDaemon {{ tor_RunAsDaemon }}
 {% if ansible_os_family == 'FreeBSD' %}
 PidFile {{ tor_PidDir }}/{{ item.name }}/pid
@@ -41,14 +41,12 @@ Nickname {{ item.nickname }}
 MyFamily {{ family.stdout }}
 
 {% if tor_ExitRelay == True %}
-# we are an exit relay!
 ExitRelay 1
 ExitPolicy {{ tor_ExitPolicy }}
 {# TODO(dw): IPv6
 {% if item.0.ipv6 != "" and item.0.ipv6 != "False" and tor_IPv6 == True and tor_IPv6Exit == True %}
 IPv6Exit 1
 {% endif %}
-#}
 {% if tor_ExitNoticePage == True %}
 DirPortFrontPage {{ tor_ConfDir }}/tor-exit-notice.html
 {% endif %}
@@ -107,4 +105,3 @@ AccountingStart {{ tor_AccountingStart }}
 {% if tor_MaxMemInQueues is defined %}
 MaxMemInQueues {{ tor_MaxMemInQueues }}
 {% endif %}
-# end of torrc

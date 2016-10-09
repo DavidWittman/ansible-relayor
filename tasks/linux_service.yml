@@ -12,5 +12,8 @@
    - reconfigure
 
 - name: Ensure Tor instances are enabled and started (Linux/systemd)
-  service: name=tor@{{ item.name }}.service enabled=yes state=started
+  service:
+    name: "tor@{{ item.name }}.service"
+    enabled: yes
+    state: started
   with_items: "{{ tor_identities }}"
