@@ -2,7 +2,7 @@
 
 - name: Ensure local DataDir folders exist (LOCAL)
   file:
-    path: "{{ tor_offline_masterkey_dir }}/{{ item.name }}"
+    path: "{{ tor_offline_master_key_dir }}/{{ item.name }}"
     state: directory
     mode: 0700
   delegate_to: localhost
@@ -13,7 +13,7 @@
 - name: Ensure all relay keys exist (LOCAL)
   command: >-
     tor --PublishServerDescriptor 0 --orport auto --list-fingerprint
-    --datadirectory "{{ tor_offline_masterkey_dir }}/{{ item.name }}"
+    --datadirectory "{{ tor_offline_master_key_dir }}/{{ item.name }}"
     --Log "err stdout"
   delegate_to: localhost
   with_items: "{{ tor_identities }}"
@@ -21,7 +21,7 @@
 - name: Generate new Ed25519 signing keys (LOCAL)
   command: >-
     tor --keygen --SigningKeyLifetime {{ tor_signingkeylifetime_days}}\ days
-    --datadirectory "{{ tor_offline_masterkey_dir }}/{{ item.name }}"
+    --datadirectory "{{ tor_offline_master_key_dir }}/{{ item.name }}"
     --Log "err stdout"
   delegate_to: localhost
   with_items: "{{ tor_identities }}"
@@ -30,8 +30,8 @@
 
 - name: Detect duplicate relay keys across relays (LOCAL)
   shell: >-
-    sha1sum {{ tor_offline_masterkey_dir }}/*/keys/secret_id_key
-    {{ tor_offline_masterkey_dir }}/*/keys/ed25519_master_id_secret_key | cut -d/ -f1 |sort | uniq -d |wc -l
+    sha1sum {{ tor_offline_master_key_dir }}/*/keys/secret_id_key
+    {{ tor_offline_master_key_dir }}/*/keys/ed25519_master_id_secret_key | cut -d/ -f1 |sort | uniq -d |wc -l
   delegate_to: localhost
   failed_when: dupcount.stdout != "0"
   register: dupcount
@@ -51,7 +51,7 @@
 
 - name: Collect fingerprints for MyFamily (LOCAL)
   shell: >-
-    cut {{ tor_offline_masterkey_dir }}/*/fingerprint -d " " -f2 | xargs | sed -e 's/ /,/g'
+    cut {{ tor_offline_master_key_dir }}/*/fingerprint -d " " -f2 | xargs | sed -e 's/ /,/g'
   delegate_to: localhost
   register: family
   tags:
@@ -97,7 +97,7 @@
 
 - name: Ensure RSA key is in place (without overriding existing keys)
   copy:
-   src: "{{ tor_offline_masterkey_dir }}/{{ item.name }}/keys/secret_id_key"
+   src: "{{ tor_offline_master_key_dir }}/{{ item.name }}/keys/secret_id_key"
    dest: "{{ tor_DataDir }}/{{ item.name }}/keys/secret_id_key"
    owner: "_tor-{{ item.name }}"
    mode: 0700
@@ -108,14 +108,14 @@
 - name: Fetch RSA key for comparision
   fetch:
     src: "{{ tor_DataDir }}/{{ item.name }}/keys/secret_id_key"
-    dest: "{{ tor_offline_masterkey_dir }}/{{ item.name }}/keys/secret_id_key.untrustedremotekey"
+    dest: "{{ tor_offline_master_key_dir }}/{{ item.name }}/keys/secret_id_key.untrustedremotekey"
     flat: yes
   become: yes
   with_items: "{{ tor_identities }}"
 
 - name: Compare local vs. remote RSA key (secret_id_key)
   shell: >-
-    sha1sum {{ tor_offline_masterkey_dir }}/{{ item.name }}/keys/secret_id_key* |
+    sha1sum {{ tor_offline_master_key_dir }}/{{ item.name }}/keys/secret_id_key* |
     cut -d/ -f1 | uniq -d | wc -l
   delegate_to: localhost
   with_items: "{{ tor_identities }}"
@@ -131,7 +131,7 @@
 
       If you want to make use of the remote RSA key you have to override the local key manually:
 
-      cd ~/.tor/offlinemasterkeys/<instance_name>/keys
+      cd {{ tor_offline_master_key_dir }}/<instance_name>/keys
 
       mv secret_id_key.untrustedremotekey secret_id_key
   when: item.stdout != "1"
@@ -140,7 +140,7 @@
 # this task is separated from the task named "Ensure RSA key is in place" because it is not run with 'force=no'
 - name: Transmit new Ed25519 signing keys
   copy:
-   src: "{{ tor_offline_masterkey_dir }}/{{ item.0.name }}/keys/{{ item.1 }}"
+   src: "{{ tor_offline_master_key_dir }}/{{ item.0.name }}/keys/{{ item.1 }}"
    dest: "{{ tor_DataDir }}/{{ item.0.name }}/keys/{{ item.1 }}"
    owner: "_tor-{{ item.0.name }}"
    mode: 0700
