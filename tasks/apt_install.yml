@@ -11,13 +11,11 @@
    - renewkey
 
 - name: Ensure torproject gpg key is installed (A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89)
-  become: yes
   apt_key: data="{{ lookup('file', 'deb.torproject.org_A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.pub') }}"
     id=A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89
     state=present
 
 - name: Ensure torproject.org repository is present (APT)
-  become: yes
   apt_repository: repo='deb http://deb.torproject.org/torproject.org {{ tor_distribution_release }} main'
     state=present 
     update_cache=yes
@@ -25,7 +23,6 @@
 # we specifically opt for present over latest to improve performance
 # "latest" is covered by auto updates
 - name: Ensure Tor is installed (APT)
-  become: yes
   apt: pkg="{{ item }}" state=present
   with_items: 
     - deb.torproject.org-keyring
@@ -38,25 +35,21 @@
 # Background:
 # https://github.com/nusenu/ansible-relayor/issues/72
 - name: Ensure systemd generator folder exists (Debian Testing and Ubuntu)
-  become: yes
   file: path=/etc/systemd/system-generators state=directory mode=755
   when: ansible_lsb.codename != 'jessie'
 
 - name: Ensure custom systemd generator is in place (Debian/Ubuntu only)
-  become: yes
   copy: src=tor-generator
    dest="{{ (ansible_lsb.codename == 'jessie')|ternary('/lib/systemd/system-generators/relayor-generator', '/etc/systemd/system-generators/tor-generator') }}"
    owner=root
    mode=755
 
 - name: Ensure the maintainer's generator is disabled (Debian 8 only)
-  become: yes
   command: dpkg-statoverride --update --add root root 644 /lib/systemd/system-generators/tor-generator
   when: ansible_lsb.codename == 'jessie'
 
 
 #- name: Ensure AppArmor allows access to necessary files (Ubuntu)
-#  become: yes
 #  lineinfile: dest=/etc/apparmor.d/local/system_tor line={{ item }}
 #  with_items:
 #    - '/etc/tor/enabled/*\ r,'

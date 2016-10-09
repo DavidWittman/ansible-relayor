@@ -3,7 +3,6 @@
 # ===========================================
 
 - name: Ensure Tor instances are reloaded if its torrc changed (Linux/systemd)
-  become: yes
   service:
     name: "tor@{{ item.item.name }}.service"
     state: reloaded
@@ -13,6 +12,5 @@
    - reconfigure
 
 - name: Ensure Tor instances are enabled and started (Linux/systemd)
-  become: yes
   service: name=tor@{{ item.name }}.service enabled=yes state=started
   with_items: "{{ tor_identities }}"

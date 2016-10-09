@@ -10,7 +10,6 @@
 # # OpenBSD does not like dots in rc filenames so
 # # we replace them with underscores.
 - name: Create links to the service files (OpenBSD)
-  become: yes
   file:
     src: /etc/rc.d/tor
     state: link
@@ -18,7 +17,6 @@
   with_items: "{{ tor_identities }}"
 
 - name: Ensure Tor instances are enabled and started (OpenBSD)
-  become: yes
   service:
    name: "tor{{ item.name|replace('.','_') }}"
    arguments: "-f {{ tor_ConfDir }}/{{ item.name }}.torrc"
@@ -27,7 +25,6 @@
   with_items: "{{ tor_identities }}"
 
 - name: Ensure Tor instances are reloaded if its torrc changed (OpenBSD)
-  become: yes
   service:
     name: "tor{{ item.item.name|replace('.','_') }}"
     state: reloaded

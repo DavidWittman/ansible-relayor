@@ -11,7 +11,6 @@
    - renewkey
 
 - name: Ensure tor package is installed (dnf)
-  become: yes
   dnf: name=tor,libselinux-python,libsemanage-python state=present
   when: ansible_pkg_mgr == 'dnf'
   notify: re-gather facts
@@ -21,22 +20,18 @@
 - meta: flush_handlers
 
 - name: Ensure EPEL repo is installed (yum)
-  become: yes
   yum: name=epel-release
   when: ansible_pkg_mgr == 'yum'
 
 - name: Ensure tor package is installed (yum)
-  become: yes
   yum: name=tor,libsemanage-python state=present
   when: ansible_pkg_mgr == 'yum'
 
 - name: Ensure SELinux boolean (tor_can_network_relay) is set appropriately (Fedora)
-  become: yes
   seboolean: name=tor_can_network_relay state=yes persistent=yes
   when: ansible_selinux.status == 'enabled'
 
 - name: Ensure systemd drop-in folder is present
-  become: yes
   file: path=/etc/systemd/system/tor@.service.d
     state=directory
     owner=root
@@ -46,7 +41,6 @@
 # without replacing the maintainer's file, for details see
 # http://www.freedesktop.org/software/systemd/man/systemd.unit.html#id-1.11.3
 - name: Ensure service file drop-in is present
-  become: yes
   copy: src=local.conf
    dest=/etc/systemd/system/tor@.service.d/local.conf
    owner=root
