@@ -16,7 +16,7 @@ ORPort {{ item.address }}:{{ item.orport }}
 ORPort [{{item.0.ipv6}}]:{{ item.orport }}
 {% endif %}
 #}
-{% if item.dirport != 0 %}
+{% if item.dirport|default(0)|int != 0 %}
 DirPort {{ item.address }}:{{ item.dirport }}
 {% endif %}
 Address {{ item.address }}

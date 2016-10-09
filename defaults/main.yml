@@ -6,11 +6,9 @@ tor_identities:
   - name: "{{ inventory_hostname }}_80"
     address: "{{ ansible_default_ipv4.address }}"
     orport: 80
-    dirport: 0
   - name: "{{ inventory_hostname }}_443"
     address: "{{ ansible_default_ipv4.address }}"
     orport: 443
-    dirport: 0
 
 # we are a non-exit by default
 # setting this to true will enable reduced exit policy
