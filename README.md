@@ -57,11 +57,26 @@ Supported Tor Releases
 
 Role Variables
 --------------
-All variables mentioned here are optional.
 
-* `tor_offline_masterkey_dir`
-    - default: ~/.tor/offlinemasterkeys
-    - Defines the location where on the ansible host relay keys (ed25519 and RSA) are stored.
+* `tor_identities`
+    - This variable defines the Tor instances which will be used or created on a host.
+    - Default:
+
+      ```
+      tor_identities:
+        - name: "{{ inventory_hostname }}_80"
+          address: "{{ ansible_default_ipv4.address }}"
+          orport: 80
+        - name: "{{ inventory_hostname }}_443"
+          address: "{{ ansible_default_ipv4.address }}"
+          orport: 443
+      ```
+    - The default setting will create two Tor identities on each host which it is run: on the default interface a Tor relay will be listening on ports 80 and 443.
+    - Identity names must be _unique_ across your environment, as they define which encryption/signing keys to use from the host.k
+
+* `tor_offline_master_key_dir`
+    - default: `~/.tor/identities`
+    - Directory on the Ansible control host where the relay's identity keys are stored.
     - Within that folder ansible will create a subfolder for every tor instance.
 
 * `tor_signingkeylifetime_days` integer
@@ -117,28 +132,6 @@ All variables mentioned here are optional.
     - specify your custom exit policy
     - is only relevant if tor_ExitRelay is True
     - default: reduced exit policy (https://trac.torproject.org/projects/tor/wiki/doc/ReducedExitPolicy)
-
-* `tor_ports`
-    - This var allows you to
-        - select tor's ORPort and DirPort
-        - reduce the number of Tor instances created per IP address
-    - disable DirPorts by setting them to 0
-    - HINT: choose them wisely and *never* change them again ;)
-    - NOTE: on SELinux-enabled systems you must choose from the following ports:
-    - 80, 81, 443, 488, 6969, 8008, 8009, 8443, 9000, 9001, 9030, 9050, 9051, 9150
-    - default:
-        - instance 1: ORPort 9000, DirPort 9001
-        - instance 2: ORPort 9100, DirPort 9101
-
-* `tor_v4ips`
-    - If you want to use only specific IPv4 addresses for Tor.
-    - Makes only sense in host_vars context.
-
-* `tor_maxips`
-    - Limits the amount of IPs we will use to generate instances on a single host.
-    - Indirectly limits the amount of instances we generate per host.
-    - If tor_ips is set, tor_maxips has no effect.
-    - default: 3
 
 * `tor_enableControlSocket`
     - will create a ControlSocket file named 'controlsocket' in every instance's datadir
